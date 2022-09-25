@@ -36,13 +36,11 @@ You require the following dependencies:
 - [Azure Functions Core Tools](https://docs.microsoft.com/azure/azure-functions/functions-run-local?tabs=v4%2Cwindows%2Ccsharp%2Cportal%2Cbash). This is part of the Azure Functions extensions for VSCode that should be recommended for automatic installation when this repo is opened in VSCode.
 - [Azurite](https://marketplace.visualstudio.com/items?itemName=Azurite.azurite). This is an local storage emulator that is required for Durable Functions. When this repo is opened in VSCode a message will appear to install this extension.
 - [Azure Static Web Apps CLI](https://github.com/Azure/static-web-apps-cli). Install this tool globally by running this command in the terminal: `npm install -g @azure/static-web-apps-cli`.
-- A free Ably Account, [sign up](https://ably.com/signup) or [log in](https://ably.com/login) to ably.com, and [create a new app and copy the API key](https://faqs.ably.com/setting-up-and-managing-api-keys).
-- Optional: The [Ably VSCode extension](https://marketplace.visualstudio.com/items?itemName=ably-labs.vscode-ably) to have easy access to the API keys of your Ably app.
 
 There are two components in this solution that run independently from each other:
 
 1. The back-end that runs the Durable Functions workflow (`PizzaWorkflow.csproj`).
-2. The Static Web App that contains the front-end (a Vue3 project) and a function app (`Auth.csproj`).
+2. The Static Web App that contains the front-end (a Vue3 project).
 
 In order to run and test the solution locally first start the PizzaWorkflow project, then the Static Web Apps project.
 
@@ -57,10 +55,9 @@ In order to run and test the solution locally first start the PizzaWorkflow proj
 ### Steps to run the Static Web Apps locally
 
 1. Run `npm install` in the root folder to install the dependencies.
-2. Rename the `api/Auth/local.settings.json.example` file to `api/Auth/local.settings.json`.
 3. Run `swa start` in the root folder.
 
-Now, browse to `http://localhost:4280` and click the *Place Order* button to start the workflow.
+Now, browse to `http://localhost:5173/` and click the *Place Order* button to start the workflow.
 
 ## Contributing
 
@@ -68,24 +65,12 @@ Want to help contributing to this project? Have a look at our [contributing guid
 
 ## More info
 
-For more questions or comments, please contact me on our [Ably Discord](http://go.ably.com/discord) or reach out on [Twitter](https://twitter.com/marcduiker).
+This project is a fork of the <a href="https://github.com/ably-labs/serverless-workflow-visualizer">Ably PizzaWorkflow Orchestrator</a> by <a href="https://twitter.com/marcduiker">Marc Duiker</a>. I was contacted by Mark to see how this would look using SignalR so we could could compare and contrast with Ably. Credit for all the great graphics and core logic goes to him.
 
-- [Join our Discord server](http://go.ably.com/discord)
-- [Follow us on Twitter](https://twitter.com/ablyrealtime)
-- [Use our SDKs](https://github.com/ably/)
-- [Visit our website](https://ably.com)
+Changes to the original code:
 
----
-[![Ably logo](https://static.ably.dev/badge-black.svg?serverless-workflow-visualizer)](https://ably.com)
+- Removed the Ably client 
+- Added SignalR by running `dotnet add package Microsoft.Azure.WebJobs.Extensions.SignalRService`, and npm install `@microsoft/signalr`
+- Added negotiate method and AddToGroup methods to the API.
 
-## Notes
-Removed the Ably client
-Ran `dotnet add package Microsoft.Azure.WebJobs.Extensions.SignalRService`
-Added negotiate method
-`dotnet user-secrets set "AzureSignalRConnectionString" "xxxx"`
-npm install @microsoft/signalr
-
-## Observations
-add binding not supported in vs code
-Issue - https://github.com/Azure/azure-signalr/issues/118
-https://docs.microsoft.com/en-gb/azure/azure-signalr/signalr-reference-data-plane-rest-api
+SignalR did not work proxying via static web apps so I moved all logic into the single function. For this reason if you are comparing the code you will see no Auth function in this version.

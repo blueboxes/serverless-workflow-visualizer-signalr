@@ -1,4 +1,3 @@
-import { ref, computed } from "vue";
 import { defineStore } from "pinia";
 import type { PizzaWorkflow } from "@/types/PizzaWorkflow";
 import OrderImage from "../assets/Order.png";
@@ -8,12 +7,8 @@ import BoxAndDrinkImage from "../assets/BoxAndDrink.png";
 import DeliveryImage from "../assets/Delivery.png";
 import DeliveredImage from "../assets/Map.gif";
 import type { Order } from "@/types/Order";
+import type { WorkflowState } from "@/types/WorkflowState";
 import * as signalR from "@microsoft/signalr";
-
-export interface WorkflowState {
-  orderId: string;
-  messageSentTimeStampUTC: number;
-}
 
 export const pizzaProcessStore = defineStore("pizza-process", {
   state: (): PizzaWorkflow => ({

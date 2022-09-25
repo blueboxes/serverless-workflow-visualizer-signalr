@@ -11,15 +11,13 @@ This repo contains a web application that visualizes the progress of a business 
 
 ## Tech stack
 
-![Component diagram](/media/diagram1.png)
-*High-level component view of the solution.*
-
 The project uses the following components:
 
 - [Azure Functions](https://docs.microsoft.com/azure/azure-functions/functions-overview), the serverless compute service in Azure.
 - [Durable Functions](https://docs.microsoft.com/azure/azure-functions/durable/), an extension for Azure Functions that allows writing workflows as code and enables stateful functions.
 - [Vue3](https://vuejs.org/), the frontend framework.
 - [Azure Static Web Apps](https://docs.microsoft.com/azure/static-web-apps/overview), the hosting solution in the cloud.
+- [Azure SignalR Instance](https://learn.microsoft.com/en-us/azure/azure-signalr/signalr-quickstart-dotnet-core), serverless SignalR support.
 
 
 ## Running locally

@@ -103,7 +103,7 @@ export const pizzaProcessStore = defineStore("pizza-process", {
     },
     async createRealtimeConnection(clientId: string, order: Order) {
       if (!this.isConnected) {
-        const apiBaseUrl = "http://localhost:7072/api";
+        const apiBaseUrl = `${import.meta.env.VITE_API_ROOT}/api`;
         this.connection = new signalR.HubConnectionBuilder()
           .withUrl(apiBaseUrl)
           .withAutomaticReconnect()
@@ -136,13 +136,16 @@ export const pizzaProcessStore = defineStore("pizza-process", {
     },
 
     async placeOrder(order: Order) {
-      const response = await window.fetch("/api/PlaceOrder", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(order),
-      });
+      const response = await window.fetch(
+        `${import.meta.env.VITE_API_ROOT}/api/startworkflow`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(order),
+        }
+      );
       if (response.ok) {
         const payload = await response.text();
         this.$state.orderId = payload;
@@ -184,9 +187,11 @@ export const pizzaProcessStore = defineStore("pizza-process", {
       this.$state.connection?.on("deliver-order", (message: WorkflowState) => {
         this.handleDeliverOrder(message);
       });
-      this.$state.connection?.on("delivered-order", (message: WorkflowState) => {
+      this.$state.connection?.on(
+        "delivered-order",
+        (message: WorkflowState) => {
           this.handleDeliveredOrder(message);
-      }
+        }
       );
     },
 

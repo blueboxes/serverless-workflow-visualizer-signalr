@@ -3,7 +3,7 @@
   "configurations": {
     "serverless-workflow-visualizer": {
       "appLocation": ".",
-      "apiLocation": "api/Auth",
+      "apiLocation": "",
       "outputLocation": "dist",
       "appBuildCommand": "npm run build",
       "apiBuildCommand": "dotnet publish -c Release",

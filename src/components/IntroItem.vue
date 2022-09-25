@@ -2,7 +2,7 @@
 import FlagIcon from "./icons/FlagIcon.vue";
 import { pizzaProcessStore } from "../stores";
 import { v4 as uuidv4 } from "uuid";
-import { MenuItemType, type Order } from "@/types/Order";
+import { MenuItemType, type Order } from "../types/Order";
 import { storeToRefs } from "pinia";
 
 const store = pizzaProcessStore();
@@ -132,8 +132,8 @@ button:disabled {
   text-align: center;
 }
 
-p{
-  padding-bottom:10px;
+p {
+  padding-bottom: 10px;
 }
 .flex-row {
   display: flex;

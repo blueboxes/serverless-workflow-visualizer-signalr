@@ -50,7 +50,7 @@ In order to run and test the solution locally first start the PizzaWorkflow proj
 
 1. Run `dotnet restore` in the `api/PizzaWorkflow` folder to install the dependencies.
 2. Rename the `api/PizzaWorkflow/local.settings.json.example` file to `api/PizzaWorkflow/local.settings.json`.
-3. Copy/paste the Ably API key in the `ABLY_API_KEY` field in the `local.settings.json` file.
+3. Copy/paste the SignalR Connection String in the `AzureSignalRConnectionString` field in the `local.settings.json` file.
 4. Start Azurite (VSCode: `CTRL+SHIFT+P -> Azurite: Start`).
 5. Start the PizzaWorkflow function app by either pressing `F5` or running `func start` in the `api/PizzaWorkflow/` folder.
 
@@ -58,8 +58,7 @@ In order to run and test the solution locally first start the PizzaWorkflow proj
 
 1. Run `npm install` in the root folder to install the dependencies.
 2. Rename the `api/Auth/local.settings.json.example` file to `api/Auth/local.settings.json`.
-3. Copy/paste the Ably API key in the `ABLY_API_KEY` field in the `local.settings.json` file.
-4. Run `swa start` in the root folder.
+3. Run `swa start` in the root folder.
 
 Now, browse to `http://localhost:4280` and click the *Place Order* button to start the workflow.
 
@@ -78,3 +77,15 @@ For more questions or comments, please contact me on our [Ably Discord](http://g
 
 ---
 [![Ably logo](https://static.ably.dev/badge-black.svg?serverless-workflow-visualizer)](https://ably.com)
+
+## Notes
+Removed the Ably client
+Ran `dotnet add package Microsoft.Azure.WebJobs.Extensions.SignalRService`
+Added negotiate method
+`dotnet user-secrets set "AzureSignalRConnectionString" "xxxx"`
+npm install @microsoft/signalr
+
+## Observations
+add binding not supported in vs code
+Issue - https://github.com/Azure/azure-signalr/issues/118
+https://docs.microsoft.com/en-gb/azure/azure-signalr/signalr-reference-data-plane-rest-api

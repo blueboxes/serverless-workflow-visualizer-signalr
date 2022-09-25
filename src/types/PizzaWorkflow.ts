@@ -1,4 +1,3 @@
-import type { Types } from "ably";
 import type { WorkflowState } from "./WorkflowState";
 
 export type PizzaWorkflow = RealtimeState & {
@@ -16,8 +15,7 @@ export type PizzaWorkflow = RealtimeState & {
 };
 
 export type RealtimeState = {
-  realtimeClient: Types.RealtimePromise | undefined;
-  channelInstance: Types.RealtimeChannelPromise | undefined;
+  connection: signalR.HubConnection | undefined;
   isConnected: boolean;
   channelPrefix: string;
 };

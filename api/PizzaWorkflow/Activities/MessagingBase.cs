@@ -1,23 +1,21 @@
 using System;
 using System.Threading.Tasks;
-using IO.Ably;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 
 namespace PizzaWorkflow.Activities
 {
     public abstract class MessagingBase
     {
-        private readonly IRestClient _ablyClient;
-
-        protected MessagingBase(IRestClient ablyClient)
+        protected async Task PublishAsync(IAsyncCollector<SignalRMessage> signalRMessages, string orderId, string eventName, object data)
         {
-            _ablyClient = ablyClient;
-        }
+            await signalRMessages.AddAsync(new SignalRMessage
+            {
+                //UserId = orderId,
+                Target = eventName,
+                Arguments = new[] { data }
+            });
 
-        protected async Task PublishAsync(string orderId, string eventName, object data)
-        {
-            var channelName = $"{Environment.GetEnvironmentVariable("ABLY_CHANNEL_PREFIX")}:{orderId}";
-            var channel = _ablyClient.Channels.Get(channelName);
-            await channel.PublishAsync(eventName, data);
         }
     }
 }

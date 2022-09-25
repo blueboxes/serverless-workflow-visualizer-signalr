@@ -1,7 +1,5 @@
 import { ref, computed } from "vue";
-import { defineStore, storeToRefs } from "pinia";
-import type { Types } from "ably";
-import { Realtime } from "ably/promises";
+import { defineStore } from "pinia";
 import type { PizzaWorkflow } from "@/types/PizzaWorkflow";
 import OrderImage from "../assets/Order.png";
 import PizzaAndDrinkImage from "../assets/PizzaAndDrink.png";
@@ -10,11 +8,16 @@ import BoxAndDrinkImage from "../assets/BoxAndDrink.png";
 import DeliveryImage from "../assets/Delivery.png";
 import DeliveredImage from "../assets/Map.gif";
 import type { Order } from "@/types/Order";
+import * as signalR from "@microsoft/signalr";
+
+export interface WorkflowState {
+  orderId: string;
+  messageSentTimeStampUTC: number;
+}
 
 export const pizzaProcessStore = defineStore("pizza-process", {
   state: (): PizzaWorkflow => ({
-    realtimeClient: undefined,
-    channelInstance: undefined,
+    connection: undefined,
     isConnected: false,
     channelPrefix: "pizza-process",
     clientId: "",
@@ -100,35 +103,36 @@ export const pizzaProcessStore = defineStore("pizza-process", {
     },
     async createRealtimeConnection(clientId: string, order: Order) {
       if (!this.isConnected) {
-        this.realtimeClient = new Realtime.Promise({
-          authUrl: `/api/CreateTokenRequest/${clientId}`,
-          echoMessages: false,
-        });
-        this.realtimeClient.connection.on(
-          "connected",
-          async (message: Types.ConnectionStateChange) => {
+        const apiBaseUrl = "http://localhost:7072/api";
+        this.connection = new signalR.HubConnectionBuilder()
+          .withUrl(apiBaseUrl)
+          .withAutomaticReconnect()
+          .build();
+
+        //This method is called to create the connection
+        //to SignalR so the client can receive messages
+        this.connection
+          .start()
+          .then(async () => {
             this.isConnected = true;
             this.attachToChannel(order.id);
             if (!this.isOrderPlaced) {
               await this.placeOrder(order);
               this.$state.isOrderPlaced = true;
             }
-          }
-        );
+          })
+          .catch(function (err) {
+            return console.error(err.toString());
+          });
 
-        this.realtimeClient.connection.on("disconnected", () => {
-          this.$state.isConnected = false;
+        this.connection.onclose(() => {
+          this.isConnected = false;
         });
-        this.realtimeClient.connection.on("closed", () => {
-          this.$state.isConnected = false;
-        });
-      } else {
-        this.attachToChannel(this.orderId);
       }
     },
 
     disconnect() {
-      this.realtimeClient?.connection.close();
+      this.connection?.stop();
     },
 
     async placeOrder(order: Order) {
@@ -140,8 +144,8 @@ export const pizzaProcessStore = defineStore("pizza-process", {
         body: JSON.stringify(order),
       });
       if (response.ok) {
-        const payload = await response.json();
-        this.$state.orderId = payload.result;
+        const payload = await response.text();
+        this.$state.orderId = payload;
         console.log(`Order ID: ${this.orderId}`);
       } else {
         this.$state.disableOrdering = false;
@@ -150,59 +154,48 @@ export const pizzaProcessStore = defineStore("pizza-process", {
     },
 
     attachToChannel(orderId: string) {
-      const channelName = `pizza-workflow:${orderId}`;
-      this.$state.channelInstance = this.realtimeClient?.channels.get(
+      /* const channelName = `pizza-workflow:${orderId}`;
+      
+      this.$state.connection. = this.realtimeClient?.channels.get(
         channelName,
         { params: { rewind: "2m" } }
       );
       this.subscribeToMessages();
+      */
+      this.subscribeToMessages();
     },
 
     subscribeToMessages() {
-      this.channelInstance?.subscribe(
-        "receive-order",
-        (message: Types.Message) => {
-          this.handleOrderReceived(message);
-        }
-      );
-      this.channelInstance?.subscribe(
+      this.$state.connection?.on("receive-order", (message: WorkflowState) => {
+        this.handleOrderReceived(message);
+      });
+      this.$state.connection?.on(
         "send-instructions-to-kitchen",
-        (message: Types.Message) => {
+        (message: WorkflowState) => {
           this.handleSendInstructions(message);
         }
       );
-      this.channelInstance?.subscribe(
-        "prepare-pizza",
-        (message: Types.Message) => {
-          this.handlePreparePizza(message);
-        }
-      );
-      this.channelInstance?.subscribe(
-        "collect-order",
-        (message: Types.Message) => {
-          this.handleCollectOrder(message);
-        }
-      );
-      this.channelInstance?.subscribe(
-        "deliver-order",
-        (message: Types.Message) => {
-          this.handleDeliverOrder(message);
-        }
-      );
-      this.channelInstance?.subscribe(
-        "delivered-order",
-        (message: Types.Message) => {
+      this.$state.connection?.on("prepare-pizza", (message: WorkflowState) => {
+        this.handlePreparePizza(message);
+      });
+      this.$state.connection?.on("collect-order", (message: WorkflowState) => {
+        this.handleCollectOrder(message);
+      });
+      this.$state.connection?.on("deliver-order", (message: WorkflowState) => {
+        this.handleDeliverOrder(message);
+      });
+      this.$state.connection?.on("delivered-order", (message: WorkflowState) => {
           this.handleDeliveredOrder(message);
-        }
+      }
       );
     },
 
-    handleOrderReceived(message: Types.Message) {
+    handleOrderReceived(message: WorkflowState) {
       this.$patch({
         orderReceivedState: {
-          orderId: message.data.orderId,
-          messageSentTimeStampUTC: message.data.messageSentTimeStampUTC,
-          messageReceivedTimestamp: message.timestamp,
+          orderId: message.orderId,
+          messageSentTimeStampUTC: message.messageSentTimeStampUTC,
+          messageReceivedTimestamp: Date.now(),
           messageDeliveredTimestamp: Date.now(),
           isDisabled: false,
           isCurrentState: true,
@@ -213,12 +206,12 @@ export const pizzaProcessStore = defineStore("pizza-process", {
       });
     },
 
-    handleSendInstructions(message: Types.Message) {
+    handleSendInstructions(message: WorkflowState) {
       this.$patch({
         kitchenInstructionsState: {
-          orderId: message.data.orderId,
-          messageSentTimeStampUTC: message.data.messageSentTimeStampUTC,
-          messageReceivedTimestamp: message.timestamp,
+          orderId: message.orderId,
+          messageSentTimeStampUTC: message.messageSentTimeStampUTC,
+          messageReceivedTimestamp: Date.now(),
           messageDeliveredTimestamp: Date.now(),
           isDisabled: false,
           isCurrentState: true,
@@ -232,12 +225,12 @@ export const pizzaProcessStore = defineStore("pizza-process", {
       });
     },
 
-    handlePreparePizza(message: Types.Message) {
+    handlePreparePizza(message: WorkflowState) {
       this.$patch({
         preparationState: {
-          orderId: message.data.orderId,
-          messageSentTimeStampUTC: message.data.messageSentTimeStampUTC,
-          messageReceivedTimestamp: message.timestamp,
+          orderId: message.orderId,
+          messageSentTimeStampUTC: message.messageSentTimeStampUTC,
+          messageReceivedTimestamp: Date.now(),
           messageDeliveredTimestamp: Date.now(),
           isDisabled: false,
           isCurrentState: true,
@@ -251,12 +244,12 @@ export const pizzaProcessStore = defineStore("pizza-process", {
       });
     },
 
-    handleCollectOrder(message: Types.Message) {
+    handleCollectOrder(message: WorkflowState) {
       this.$patch({
         collectionState: {
-          orderId: message.data.orderId,
-          messageSentTimeStampUTC: message.data.messageSentTimeStampUTC,
-          messageReceivedTimestamp: message.timestamp,
+          orderId: message.orderId,
+          messageSentTimeStampUTC: message.messageSentTimeStampUTC,
+          messageReceivedTimestamp: Date.now(),
           messageDeliveredTimestamp: Date.now(),
           isDisabled: false,
           isCurrentState: true,
@@ -270,12 +263,12 @@ export const pizzaProcessStore = defineStore("pizza-process", {
       });
     },
 
-    handleDeliverOrder(message: Types.Message) {
+    handleDeliverOrder(message: WorkflowState) {
       this.$patch({
         deliveryState: {
-          orderId: message.data.orderId,
-          messageSentTimeStampUTC: message.data.messageSentTimeStampUTC,
-          messageReceivedTimestamp: message.timestamp,
+          orderId: message.orderId,
+          messageSentTimeStampUTC: message.messageSentTimeStampUTC,
+          messageReceivedTimestamp: Date.now(),
           messageDeliveredTimestamp: Date.now(),
           isDisabled: false,
           isCurrentState: true,
@@ -289,12 +282,12 @@ export const pizzaProcessStore = defineStore("pizza-process", {
       });
     },
 
-    handleDeliveredOrder(message: Types.Message) {
+    handleDeliveredOrder(message: WorkflowState) {
       this.$patch({
         deliveredState: {
-          orderId: message.data.orderId,
-          messageSentTimeStampUTC: message.data.messageSentTimeStampUTC,
-          messageReceivedTimestamp: message.timestamp,
+          orderId: message.orderId,
+          messageSentTimeStampUTC: message.messageSentTimeStampUTC,
+          messageReceivedTimestamp: Date.now(),
           messageDeliveredTimestamp: Date.now(),
           isDisabled: false,
           isCurrentState: true,

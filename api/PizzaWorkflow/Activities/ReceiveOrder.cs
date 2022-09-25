@@ -3,20 +3,18 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using IO.Ably;
+using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 using PizzaWorkflow.Models;
 
 namespace PizzaWorkflow.Activities
 {
     public class ReceiveOrder : MessagingBase
     {
-        public ReceiveOrder(IRestClient ablyClient) : base(ablyClient)
-        {
-        }
 
         [FunctionName(nameof(ReceiveOrder))]
         public async Task<List<Instructions>> Run(
-            [ActivityTrigger] Order order)
+            [ActivityTrigger] Order order,
+            [SignalR(HubName = "orders", ConnectionStringSetting = "AzureSignalRConnectionString")] IAsyncCollector<SignalRMessage> signalRMessages)
         {
             var instructions = new List<Instructions>();
             foreach (var menuItem in order.MenuItems)
@@ -32,7 +30,7 @@ namespace PizzaWorkflow.Activities
                     });
             }
 
-            await base.PublishAsync(order.Id, "receive-order", new WorkflowState(order.Id));
+            await base.PublishAsync(signalRMessages, order.Id, "receive-order", new WorkflowState(order.Id));
 
             return instructions;
         }

@@ -11,7 +11,7 @@ namespace PizzaWorkflow.Activities
         {
             await signalRMessages.AddAsync(new SignalRMessage
             {
-                //UserId = orderId,
+                GroupName = orderId,
                 Target = eventName,
                 Arguments = new[] { data }
             });

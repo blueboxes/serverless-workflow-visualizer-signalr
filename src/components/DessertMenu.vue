@@ -12,37 +12,21 @@ import FlagIcon from "./icons/FlagIcon.vue";
     <div class="flex-list">
       <ul>
         <li>
-          <a href="https://github.com/ably-labs/serverless-workflow-visualizer"
+          <a
+            href="https://github.com/blueboxes/serverless-workflow-visualizer-signalr"
             >GitHub Repo</a
           >
           (the star of our desserts ⭐)
         </li>
+        <li>Blog post (the chef is still working on this ✍️)</li>
         <li>
-          Blog post (the chef is still working on this ✍️)
-          <!-- <a href="https://ably.com/blog">Blog post</a>
-          (our most read menu item 📖) -->
-        </li>
-        <li>
-          <a href="https://www.youtube.com/c/AblyRealtime">YouTube</a>
-          (please eat with your thumbs up 👍)
-        </li>
-        <li>
-          <a href="http://go.ably.com/discord">Discord</a>
-          (ideal for sharing 👥)
-        </li>
-        <li>
-          <a
-            href="https://ably.com/?utm_source=pizza&utm_medium=ably-dev&utm_campaign=serverless-workflow-visualizer"
-            >Ably website</a
+          <a href="https://www.youtube.com/watch?v=FmxAf8TfFkc"
+            >Signalr on YouTube</a
           >
-          (hungry for more? 🍴🌍)
         </li>
       </ul>
     </div>
-    <p>
-      Contact <a href="https://twitter.com/marcduiker">the chef</a> 🧑‍🍳 for
-      additional recipes.
-    </p>
+    <p>Contact <a href="https://twitter.com/johnkilmister">the chef</a> 🧑‍🍳</p>
   </div>
 </template>
 

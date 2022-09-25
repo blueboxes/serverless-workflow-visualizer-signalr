@@ -58,7 +58,16 @@ function getRandomID() {
     </div>
     <div class="flex-center">
       <details>
-        <summary>More info about the workflow...</summary>
+        <summary>More info about the workflow and project...</summary>
+        <p class="animate">
+          This project is a fork of the
+          <a href="https://github.com/ably-labs/serverless-workflow-visualizer"
+            >Ably PizzaWorkflow Orchestrator</a
+          >
+          by <a href="https://twitter.com/marcduiker">Marc Duiker</a>. I was
+          contacted by Mark to see how this would look using SignalR so we could
+          could compare and contrast with Ably.
+        </p>
         <p class="animate">
           The serverless workflow is implemented using
           <a
@@ -69,8 +78,8 @@ function getRandomID() {
           . The <code>PizzaWorkflowOrchestrator</code> function calls 6 activity
           functions in sequence. Each of these functions publishes a message via
           <a
-            href="https://ably.com/docs/quick-start-guide?utm_source=pizza&utm_medium=ably-dev&utm_campaign=serverless-workflow-visualizer"
-            >Ably</a
+            href="https://learn.microsoft.com/en-us/azure/azure-signalr/signalr-quickstart-azure-functions-csharp"
+            >Azure Serverless SignalR</a
           >
           , which is received by this website, so you can see how far the
           workflow has progressed in real-time.
@@ -123,6 +132,9 @@ button:disabled {
   text-align: center;
 }
 
+p{
+  padding-bottom:10px;
+}
 .flex-row {
   display: flex;
   flex-direction: column;
@@ -132,6 +144,7 @@ button:disabled {
 
 details {
   cursor: pointer;
+  display: block;
 }
 
 .flex-center {

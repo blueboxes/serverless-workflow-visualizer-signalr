@@ -16,7 +16,7 @@ namespace PizzaWorkflow.Orchestrators
             ILogger logger)
         {
             var order = context.GetInput<Order>();
- 
+             
             var instructions = await context.CallActivityAsync<IEnumerable<Instructions>>(
                 nameof(ReceiveOrder),
                 order);

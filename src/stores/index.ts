@@ -115,7 +115,7 @@ export const pizzaProcessStore = defineStore("pizza-process", {
           .start()
           .then(async () => {
             this.isConnected = true;
-            this.attachToChannel(order.id);
+            this.attachToChannel(order.id, this.connection?.connectionId);
             if (!this.isOrderPlaced) {
               await this.placeOrder(order);
               this.$state.isOrderPlaced = true;
@@ -156,15 +156,18 @@ export const pizzaProcessStore = defineStore("pizza-process", {
       }
     },
 
-    attachToChannel(orderId: string) {
-      /* const channelName = `pizza-workflow:${orderId}`;
-      
-      this.$state.connection. = this.realtimeClient?.channels.get(
-        channelName,
-        { params: { rewind: "2m" } }
-      );
-      this.subscribeToMessages();
-      */
+    async attachToChannel(
+      orderId: string,
+      connectionId: string | null | undefined
+    ) {
+      await window.fetch(`${import.meta.env.VITE_API_ROOT}/api/addToGroup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ orderId: orderId, connectionId: connectionId }),
+      });
+
       this.subscribeToMessages();
     },
 

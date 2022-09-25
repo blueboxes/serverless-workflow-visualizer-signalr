@@ -14,9 +14,10 @@ namespace PizzaWorkflow.Activities
         [FunctionName(nameof(CollectOrder))]
         public async Task Run(
             [ActivityTrigger] Order order,
+            [SignalR(HubName = "orders", ConnectionStringSetting = "AzureSignalRConnectionString")] IAsyncCollector<SignalRGroupAction> signalRGroupActions,
             [SignalR(HubName = "orders", ConnectionStringSetting = "AzureSignalRConnectionString")] IAsyncCollector<SignalRMessage> signalRMessages,
             ILogger logger)
-        {
+        { 
             logger.LogInformation($"Collect menu items for order {order.Id}.");
             Thread.Sleep(new Random().Next(3000, 6000));
             await base.PublishAsync(signalRMessages, order.Id, "collect-order", new WorkflowState(order.Id));

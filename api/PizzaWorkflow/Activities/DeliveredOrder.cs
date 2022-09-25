@@ -11,7 +11,6 @@ namespace PizzaWorkflow.Activities
 {
     public class DeliveredOrder : MessagingBase
     {
-  
         [FunctionName(nameof(DeliveredOrder))]
         public async Task Run(
             [SignalR(HubName = "orders", ConnectionStringSetting = "AzureSignalRConnectionString")] IAsyncCollector<SignalRMessage> signalRMessages,
